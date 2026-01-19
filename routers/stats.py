@@ -1,16 +1,34 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from datetime import datetime
 from models import Task
 from database import get_async_session
 
-router = APIRouter(
-    prefix="/stats",
-    tags=["statistics"]
-)
+router = APIRouter(prefix="/stats", tags=["statistics"])
+
+URGENCY_THRESHOLD_DAYS = 3
 
 
-@router.get("/", response_model=dict)
+def calculate_urgency(deadline_at: datetime) -> bool:
+    if not deadline_at:
+        return False
+    days_left = (deadline_at.replace(tzinfo=None) - datetime.now()).days
+    return days_left <= URGENCY_THRESHOLD_DAYS
+
+
+def calculate_quadrant(is_important: bool, is_urgent: bool) -> str:
+    if is_important and is_urgent:
+        return "Q1"
+    elif is_important and not is_urgent:
+        return "Q2"
+    elif not is_important and is_urgent:
+        return "Q3"
+    else:
+        return "Q4"
+
+
+@router.get("/")
 async def get_tasks_stats(db: AsyncSession = Depends(get_async_session)) -> dict:
     result = await db.execute(select(Task))
     tasks = result.scalars().all()
@@ -20,8 +38,10 @@ async def get_tasks_stats(db: AsyncSession = Depends(get_async_session)) -> dict
     by_status = {"completed": 0, "pending": 0}
 
     for task in tasks:
-        if task.quadrant in by_quadrant:
-            by_quadrant[task.quadrant] += 1
+        is_urgent = calculate_urgency(task.deadline_at)
+        quadrant = calculate_quadrant(task.is_important, is_urgent)
+        by_quadrant[quadrant] += 1
+        
         if task.completed:
             by_status["completed"] += 1
         else:
@@ -31,4 +51,32 @@ async def get_tasks_stats(db: AsyncSession = Depends(get_async_session)) -> dict
         "total_tasks": total_tasks,
         "by_quadrant": by_quadrant,
         "by_status": by_status
+    }
+
+
+@router.get("/deadlines")
+async def get_deadlines_stats(db: AsyncSession = Depends(get_async_session)) -> dict:
+    result = await db.execute(select(Task).where(Task.completed == False))
+    tasks = result.scalars().all()
+
+    deadlines = []
+    for task in tasks:
+        days_left = None
+        if task.deadline_at:
+            days_left = (task.deadline_at.replace(tzinfo=None) - datetime.now()).days
+
+        deadlines.append({
+            "id": task.id,
+            "title": task.title,
+            "description": task.description,
+            "created_at": task.created_at,
+            "deadline_at": task.deadline_at,
+            "days_until_deadline": days_left
+        })
+
+    deadlines.sort(key=lambda x: x["days_until_deadline"] if x["days_until_deadline"] is not None else 9999)
+
+    return {
+        "pending_tasks": len(deadlines),
+        "tasks": deadlines
     }

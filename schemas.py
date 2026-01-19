@@ -4,80 +4,32 @@ from datetime import datetime
 
 
 class TaskBase(BaseModel):
-    title: str = Field(
-        ...,
-        min_length=3,
-        max_length=100,
-        description="Название задачи"
-    )
-    description: Optional[str] = Field(
-        None,
-        max_length=500,
-        description="Описание задачи"
-    )
-    is_important: bool = Field(
-        ...,
-        description="Важность задачи"
-    )
-    is_urgent: bool = Field(
-        ...,
-        description="Срочность задачи"
-    )
+    title: str = Field(..., min_length=3, max_length=100, description="Название задачи")
+    description: Optional[str] = Field(None, max_length=500, description="Описание задачи")
+    is_important: bool = Field(..., description="Важность задачи")
 
 
 class TaskCreate(TaskBase):
-    pass
+    deadline_at: datetime = Field(..., description="Дедлайн задачи")
 
 
 class TaskUpdate(BaseModel):
-    title: Optional[str] = Field(
-        None,
-        min_length=3,
-        max_length=100,
-        description="Новое название задачи"
-    )
-    description: Optional[str] = Field(
-        None,
-        max_length=500,
-        description="Новое описание"
-    )
-    is_important: Optional[bool] = Field(
-        None,
-        description="Новая важность"
-    )
-    is_urgent: Optional[bool] = Field(
-        None,
-        description="Новая срочность"
-    )
-    completed: Optional[bool] = Field(
-        None,
-        description="Статус выполнения"
-    )
+    title: Optional[str] = Field(None, min_length=3, max_length=100)
+    description: Optional[str] = Field(None, max_length=500)
+    is_important: Optional[bool] = Field(None)
+    deadline_at: Optional[datetime] = Field(None)
+    completed: Optional[bool] = Field(None)
 
 
 class TaskResponse(TaskBase):
-    id: int = Field(
-        ...,
-        description="Уникальный идентификатор задачи",
-        examples=[1]
-    )
-    quadrant: str = Field(
-        ...,
-        description="Квадрант матрицы Эйзенхауэра (Q1, Q2, Q3, Q4)",
-        examples=["Q1"]
-    )
-    completed: bool = Field(
-        default=False,
-        description="Статус выполнения задачи"
-    )
-    created_at: datetime = Field(
-        ...,
-        description="Дата и время создания задачи"
-    )
-    completed_at: Optional[datetime] = Field(
-        None,
-        description="Дата и время выполнения задачи"
-    )
+    id: int
+    quadrant: str
+    is_urgent: bool = Field(description="Срочность (рассчитывается автоматически)")
+    completed: bool
+    created_at: datetime
+    completed_at: Optional[datetime]
+    deadline_at: Optional[datetime]
+    days_until_deadline: Optional[int] = Field(None, description="Дней до дедлайна")
 
     class Config:
         from_attributes = True
