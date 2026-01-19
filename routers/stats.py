@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from routers.tasks import tasks_db
+from database import tasks_db
 
 router = APIRouter(prefix="/stats", tags=["stats"])
 
@@ -23,4 +23,3 @@ async def get_stats() -> dict:
             "pending": pending
         }
     }
-

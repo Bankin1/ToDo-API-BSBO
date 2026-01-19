@@ -11,8 +11,8 @@ app = FastAPI(
     }
 )
 
-app.include_router(tasks.router)
-app.include_router(stats.router)
+app.include_router(tasks.router, prefix="/api/v1")
+app.include_router(stats.router, prefix="/api/v1")
 
 
 @app.get("/")
@@ -23,8 +23,3 @@ async def welcome() -> dict:
         "version": app.version,
         "contact": app.contact
     }
-
-
-@app.post("/tasks")
-async def create_task(task: dict):
-    return {"message": "Запись успешно создана!", "task": task}
