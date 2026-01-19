@@ -1,74 +1,68 @@
 # ToDo API
 
-REST API для управления задачами с использованием матрицы Эйзенхауэра. Позволяет организовывать задачи по квадрантам важности и срочности.
+REST API для управления задачами с использованием матрицы Эйзенхауэра.
 
 ## Технологии
 
 - Python 3.13
 - FastAPI 0.115.0
-- Uvicorn 0.32.0
-- Pydantic 2.10.0
 - SQLAlchemy 2.0.36
 - PostgreSQL (Supabase)
-- asyncpg 0.30.0
+- Pydantic 2.10.0
 
 ## Структура проекта
 
 ```
 ToDo-API-BSBO/
-├── main.py           # Главный файл приложения
-├── database.py       # Настройка подключения к БД
-├── schemas.py        # Pydantic модели
+├── main.py              # Точка входа
+├── database.py          # Подключение к БД
+├── schemas.py           # Pydantic схемы
 ├── models/
-│   └── task.py       # SQLAlchemy модель Task
+│   └── task.py          # SQLAlchemy модель
 ├── routers/
-│   ├── tasks.py      # Endpoints для задач
-│   └── stats.py      # Endpoints для статистики
-├── .env              # Переменные окружения (не в git)
+│   ├── tasks.py         # CRUD операции
+│   └── stats.py         # Статистика
+├── .env                 # Переменные окружения
 └── requirements.txt
 ```
 
 ## Запуск
 
 ```bash
-# Клонировать репозиторий
 git clone https://github.com/Bankin1/ToDo-API-BSBO.git
 cd ToDo-API-BSBO
 
-# Создать виртуальное окружение
 python3 -m venv venv
 source venv/bin/activate
 
-# Установить зависимости
 pip install -r requirements.txt
 
-# Создать файл .env с переменными окружения
+# Создать .env файл с DATABASE_URL
 
-# Проверить подключение к БД
-python test_connection.py
-
-# Запустить сервер
 uvicorn main:app --reload
 ```
 
 ## API Endpoints
 
-Base URL: `http://127.0.0.1:8000/api/v1`
+Base URL: `http://127.0.0.1:8000/api/v2`
 
-| Метод | Endpoint | Описание |
-|-------|----------|----------|
-| GET | /tasks | Получить все задачи |
-| POST | /tasks | Создать задачу |
-| GET | /tasks/{id} | Получить задачу по ID |
-| PUT | /tasks/{id} | Обновить задачу |
-| PATCH | /tasks/{id}/complete | Отметить выполненной |
-| DELETE | /tasks/{id} | Удалить задачу |
-| GET | /tasks/stats | Статистика по задачам |
-| GET | /tasks/search?keyword= | Поиск задач |
-| GET | /tasks/quadrant/{Q1-Q4} | Фильтр по квадранту |
-| GET | /tasks/status/{status} | Фильтр по статусу |
+| Метод  | Endpoint              | Описание                    |
+|--------|-----------------------|-----------------------------|
+| GET    | /tasks                | Все задачи                  |
+| POST   | /tasks                | Создать задачу              |
+| GET    | /tasks/{id}           | Задача по ID                |
+| PUT    | /tasks/{id}           | Обновить задачу             |
+| PATCH  | /tasks/{id}/complete  | Отметить выполненной        |
+| DELETE | /tasks/{id}           | Удалить задачу              |
+| GET    | /tasks/search?q=      | Поиск                       |
+| GET    | /tasks/quadrant/{Q}   | Фильтр по квадранту         |
+| GET    | /tasks/status/{s}     | Фильтр по статусу           |
+| GET    | /stats                | Статистика                  |
 
-Документация Swagger: http://127.0.0.1:8000/docs
+**Дополнительно:**
+- `GET /` — информация об API
+- `GET /health` — проверка здоровья
+- `GET /docs` — Swagger документация
 
 ## Автор
 
