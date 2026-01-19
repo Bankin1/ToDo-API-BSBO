@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from datetime import datetime
-from models import Task
+from models import Task, User
 from database import get_async_session
+from dependencies import get_current_user
 
 router = APIRouter(prefix="/stats", tags=["statistics"])
 
@@ -29,8 +30,15 @@ def calculate_quadrant(is_important: bool, is_urgent: bool) -> str:
 
 
 @router.get("/")
-async def get_tasks_stats(db: AsyncSession = Depends(get_async_session)) -> dict:
-    result = await db.execute(select(Task))
+async def get_tasks_stats(
+    db: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(get_current_user)
+) -> dict:
+    if current_user.role == "admin":
+        result = await db.execute(select(Task))
+    else:
+        result = await db.execute(select(Task).where(Task.user_id == current_user.id))
+    
     tasks = result.scalars().all()
 
     total_tasks = len(tasks)
@@ -55,8 +63,19 @@ async def get_tasks_stats(db: AsyncSession = Depends(get_async_session)) -> dict
 
 
 @router.get("/deadlines")
-async def get_deadlines_stats(db: AsyncSession = Depends(get_async_session)) -> dict:
-    result = await db.execute(select(Task).where(Task.completed == False))
+async def get_deadlines_stats(
+    db: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(get_current_user)
+) -> dict:
+    if current_user.role == "admin":
+        result = await db.execute(select(Task).where(Task.completed == False))
+    else:
+        result = await db.execute(
+            select(Task).where(
+                (Task.user_id == current_user.id) & (Task.completed == False)
+            )
+        )
+    
     tasks = result.scalars().all()
 
     deadlines = []

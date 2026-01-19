@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, ForeignKey
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
 from database import Base
 
 
@@ -15,6 +16,9 @@ class Task(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     completed_at = Column(DateTime(timezone=True), nullable=True)
     deadline_at = Column(DateTime(timezone=True), nullable=True)
+    
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    owner = relationship("User", back_populates="tasks")
 
     def __repr__(self) -> str:
         return f"<Task(id={self.id}, title='{self.title}', quadrant='{self.quadrant}')>"
