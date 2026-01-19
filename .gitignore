@@ -1,8 +1,37 @@
 # Игнорируемые файлы для git
+
+# Виртуальное окружение
 venv/
+.venv/
+env/
+
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Переменные окружения
 .env
+.env.local
+
+# macOS
 .DS_Store
+
+# База данных
 *.db
 *.sqlite3
+
+# Логи
+*.log
+
+# Coverage
+htmlcov/
+.coverage
